@@ -1,0 +1,51 @@
+version: '3.8'
+name: 'calvary-admin'
+
+services:
+  app:
+    build: './app'
+    container_name: 'calvary-admin-app'
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - calvary-admin-network
+    depends_on:
+      - backend
+
+  backend:
+    build: './backend'
+    container_name: 'calvary-admin-backend'
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - calvary-admin-network
+    env_file:
+      - './backend/.env'
+    depends_on:
+      - postgres
+    
+  postgres:
+    image: postgres:16.2-alpine3.19
+    container_name: 'calvary-admin-postgres'
+    restart: always
+    environment:
+      POSTGRES_USER: calvaryadmin
+      POSTGRES_PASSWORD: calvary@admin@999
+      POSTGRES_DB: calvary_admin
+    ports:
+      - 5432:5432
+    networks:
+      - calvary-admin-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres-data:
+
+networks:
+  calvary-admin-network:
+    driver: bridge
+
