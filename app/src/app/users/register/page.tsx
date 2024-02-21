@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { UserSchema, type User } from "@/interfaces/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 export default function Page() {
   const form = useForm<User>({
@@ -198,19 +199,68 @@ export default function Page() {
 
           <FormField
             control={form.control}
+            name="position"
+            defaultValue=""
+            render={({ field }) => (
+              <FormItem className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
+                <FormLabel className="user-form-label">Position</FormLabel>
+                <div className="mt-2 sm:col-span-2 sm:mt-0">
+                  <div className="user-form-input-div">
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select the designated department" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="m@example.com">
+                          m@example.com
+                        </SelectItem>
+                        <SelectItem value="m@google.com">
+                          m@google.com
+                        </SelectItem>
+                        <SelectItem value="m@support.com">
+                          m@support.com
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <FormDescription>
+                    This is the role for this admin system.
+                  </FormDescription>
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="isActive"
             defaultValue={true}
             render={({ field }) => (
               <FormItem className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
                 <FormLabel className="user-form-label">isActive</FormLabel>
                 <div className="mt-2 sm:col-span-2 sm:mt-0">
-                  <div className="user-form-input-div">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
+                  <div
+                    className={cn(
+                      "user-form-input-div",
+                      "ring-0 ring-offset-0 shadow-none",
+                      "focus-within:ring-0 focus:ring-offset-0"
+                    )}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <span>{field.value ? "Active" : "Non Active"}</span>
+                    </div>
                   </div>
                   <FormDescription>
                     This user is active in the system.

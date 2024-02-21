@@ -15,8 +15,12 @@ func main() {
 	postgresDB.Connect()
 
 	mux := http.NewServeMux()
+	// allow CORS
+
 	userRoutes := routes.NewUserRoutes()
 	userRoutes.RegisterRoutes(mux)
+	fileRoutes := routes.NewFileRoutes()
+	fileRoutes.RegisterRoutes(mux)
 
 	http.ListenAndServe(":8080", mux)
 }
