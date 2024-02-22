@@ -1,27 +1,30 @@
 package routes
 
 import (
-	"net/http"
-
+	"github.com/go-chi/chi/v5"
 	"github.com/kokweikhong/calvary-admin/backend/internal/handlers"
 )
+
+type UserRoutes interface {
+	RegisterRoutes(r *chi.Mux)
+}
 
 type userRoutes struct {
 	userHandler handlers.UserHandler
 }
 
-func NewUserRoutes() *userRoutes {
+func NewUserRoutes() UserRoutes {
 	return &userRoutes{
 		userHandler: handlers.NewUserHandler(),
 	}
 }
 
-func (u *userRoutes) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /users", u.userHandler.GetUsers)
-	mux.HandleFunc("GET /users/{id}", u.userHandler.GetUser)
-	mux.HandleFunc("POST /users", u.userHandler.CreateUser)
-	mux.HandleFunc("PUT /users/{id}", u.userHandler.UpdateUser)
-	mux.HandleFunc("DELETE /users/{id}", u.userHandler.DeleteUser)
+func (u *userRoutes) RegisterRoutes(r *chi.Mux) {
+	r.Route("/users", func(r chi.Router) {
+		r.Get("/", u.userHandler.GetUsers)
+		r.Get("/{id}", u.userHandler.GetUser)
+		r.Post("/", u.userHandler.CreateUser)
+		r.Put("/{id}", u.userHandler.UpdateUser)
+		r.Delete("/{id}", u.userHandler.DeleteUser)
+	})
 }
-
-

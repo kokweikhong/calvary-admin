@@ -2,13 +2,15 @@ package services
 
 import (
 	"bytes"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 type FileService interface {
@@ -27,30 +29,36 @@ func NewFileService() FileService {
 func (f *fileService) UploadFile(fileBytes []byte, filename, saveDir string) (string, error) {
 	key := os.Getenv("DO_SPACES_KEY")
 	secret := os.Getenv("DO_SPACES_SECRET")
-	endpoint := "https://calvarycarpentry-cloud-storage.sgp1.digitaloceanspaces.com"
+	endpoint := "https://sgp1.digitaloceanspaces.com"
 	region := "sgp1"
-	session := session.Must(session.NewSession(&aws.Config{
+	s3Config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials(key, secret, ""),
 		Endpoint:    aws.String(endpoint),
 		Region:      aws.String(region),
-	}))
+	}
 
-	uploader := s3manager.NewUploader(session)
-
-	filename = filepath.Join("calvary-admin", saveDir, filename)
-
-	reader := bytes.NewReader(fileBytes)
-
-	bucket := "calvarycarpentry-cloud-storage"
-
-	result, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(filename),
-		Body:   reader,
-	})
+	session, err := session.NewSession(s3Config)
 	if err != nil {
+		slog.Error("Error creating session", "message", err.Error())
+	}
+	s3Client := s3.New(session)
+
+	folder := filepath.Join("calvary-admin", saveDir)
+	dst := filepath.Join(folder, filename)
+	dst = strings.ReplaceAll(dst, "\\", "/")
+
+	result, err := s3Client.PutObject(&s3.PutObjectInput{
+		ACL:    aws.String("public-read"),
+		Bucket: aws.String("calvarycarpentry-cloud-storage"),
+		Key:    aws.String(dst),
+		Body:   bytes.NewReader(fileBytes),
+	})
+	slog.Info("filepath", "file", dst)
+	if err != nil {
+		slog.Error("Error uploading file", "message", err.Error())
 		return "", err
 	}
 
-	return result.Location, nil
+	slog.Info("File uploaded successfully", "message", result)
+	return dst, nil
 }

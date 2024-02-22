@@ -1,5 +1,6 @@
 "use client";
 
+import FileUploadButton from "@/components/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -20,37 +21,72 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { UserSchema, type User } from "@/interfaces/user";
+import { cn } from "@/lib/utils";
+import { createUser } from "@/services/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { cn } from "@/lib/utils";
 
 export default function Page() {
   const form = useForm<User>({
     resolver: zodResolver(UserSchema),
   });
 
+  function handleProfileImageOnChange(value: string) {
+    form.setValue("profileImage", value);
+  }
+
   const onSubmit: SubmitHandler<User> = async (values) => {
-    console.log(values);
+    await createUser(values);
   };
-
-  console.log(form.formState.errors);
-
-  // id: z.number(),
-  // username: z.string(),
-  // email: z.string(),
-  // password: z.string(),
-  // role: z.string(),
-  // department: z.string(),
-  // profileImage: z.string(),
-  // isActive: z.boolean(),
-  // position: z.string(),
-  // updatedAt: z.string(),
-  // createdAt: z.string(),
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="mt-10 space-y-8 border-b border-gray-900/10 pb-12 sm:space-y-0 sm:divide-y sm:divide-gray-900/10 sm:border-t sm:pb-0">
+          <FormField
+            control={form.control}
+            name="profileImage"
+            defaultValue=""
+            render={({ field }) => (
+              <FormItem className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
+                <FormLabel className="user-form-label">Profile Image</FormLabel>
+                <div className="mt-2 sm:col-span-2 sm:mt-0">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={cn(
+                        "user-form-input-div",
+                        "ring-0 ring-offset-0 shadow-none",
+                        "focus-within:ring-0 focus:ring-offset-0"
+                      )}
+                    >
+                      {form.watch("username") !== "" ? (
+                        <FileUploadButton
+                          filename={`profile-image-${form.watch("username")}`}
+                          saveDir="user-profile-images"
+                          setValue={handleProfileImageOnChange}
+                        />
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-500">
+                            Please input username first
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <FormControl>
+                      <Input {...field} disabled className="border-none" />
+                    </FormControl>
+                  </div>
+
+                  <FormDescription>
+                    This is your public display profile image.
+                  </FormDescription>
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="username"

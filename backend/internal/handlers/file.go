@@ -61,7 +61,9 @@ func (f *fileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 		fileName = handler.Filename
 	} else {
 		// concatenate the file extension to the filename
-		fileName += "." + filepath.Ext(handler.Filename)
+		fileName += filepath.Ext(handler.Filename)
+		slog.Info(handler.Filename)
+		slog.Info(filepath.Ext(handler.Filename))
 	}
 
 	saveDir := r.FormValue("saveDir")
